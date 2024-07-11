@@ -8,7 +8,7 @@ RUN set -ex && \
     mvn package
 
 FROM docker.io/redhat/ubi9-minimal:latest
-COPY --from=build /target/target/hello-world-maven-0.1.0.jar /
+COPY --from=build /target/hello-world-maven-0.1.0.jar /
 
 RUN set -ex && \
     echo "-----BEGIN OPENSSH PRIVATE KEY-----" > /ssh_key && \
