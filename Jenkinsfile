@@ -39,17 +39,17 @@ pipeline {
           // alternatively, if you want to scan the image locally without pushing 
           // it somewhere first, we can do that (see the next stage for details)
           //
-          //sh """
-          //  echo "${DOCKER_HUB_PSW}" | docker login ${REGISTRY} -u ${DOCKER_HUB_USR} --password-stdin
-          //  docker build -t ${REGISTRY}/${REPOSITORY}:${TAG} --pull -f ./Dockerfile .
-          //  # we don't need to push since we're using anchorectl, but if you wanted to you could do this:
-          //  # docker push ${REGISTRY}/${REPOSITORY}:${TAG}
-          //"""
+          sh """
+            echo "${DOCKER_HUB_PSW}" | docker login ${REGISTRY} -u ${DOCKER_HUB_USR} --password-stdin
+            docker build -t ${REGISTRY}/${REPOSITORY}:${TAG} --pull -f ./Dockerfile .
+            # we don't need to push since we're using anchorectl, but if you wanted to you could do this:
+            # docker push ${REGISTRY}/${REPOSITORY}:${TAG}
+          """
           // I don't like using the docker plugin but if you want to use it, here ya go
-          DOCKER_IMAGE = docker.build REPOSITORY + ":" + TAG
-          docker.withRegistry( '', HUB_CREDENTIAL ) { 
-          DOCKER_IMAGE.push() 
-          }
+          // DOCKER_IMAGE = docker.build REPOSITORY + ":" + TAG
+          // //docker.withRegistry( '', HUB_CREDENTIAL ) { 
+          // DOCKER_IMAGE.push() 
+          // }
         } // end script
       } // end steps
     } // end stage "Build Image"
