@@ -41,15 +41,29 @@ pipeline {
           //
           sh """
             echo "${DOCKER_HUB_PSW}" | docker login ${REGISTRY} -u ${DOCKER_HUB_USR} --password-stdin
-            docker build -t ${REGISTRY}/${REPOSITORY}:${TAG} --pull -f ./Dockerfile .
+            docker build -t ${IMAGE} --pull -f ./Dockerfile .
             # we don't need to push since we're using anchorectl, but if you wanted to you could do this:
-            # docker push ${REGISTRY}/${REPOSITORY}:${TAG}
+            # docker push ${IMAGE}
           """
           // I don't like using the docker plugin but if you want to use it, here ya go
           // DOCKER_IMAGE = docker.build REPOSITORY + ":" + TAG
           // //docker.withRegistry( '', HUB_CREDENTIAL ) { 
           // DOCKER_IMAGE.push() 
           // }
+        } // end script
+      } // end steps
+    } // end stage "Build Image"
+
+    stage('Scan Image') {
+      steps {
+        script {
+          sh """
+            curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ${HOME}/.local/bin
+            curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b ${HOME}/.local/bin
+            export PATH="${HOME}/.local/bin:${PATH}
+            syft -o json ${IMAGE} > sbom.json
+            grype sbom:sbom.json
+          """          
         } // end script
       } // end steps
     } // end stage "Build Image"
