@@ -60,7 +60,7 @@ pipeline {
           sh """
             curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ${HOME}/.local/bin
             curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b ${HOME}/.local/bin
-            export PATH="${HOME}/.local/bin:${PATH}
+            export PATH="${HOME}/.local/bin:${PATH}"
             syft -o json ${IMAGE} > sbom.json
             grype sbom:sbom.json
           """          
@@ -71,16 +71,26 @@ pipeline {
     
     // optional stage, this just deletes the image locally so I don't end up with 300 old images
     //
-    //stage('Clean Up') {
-    //  // delete the images locally
-    //  steps {
-    //    sh 'docker rmi ${REGISTRY}/${REPOSITORY}:${TAG} || failure=1' 
-    //    //
-    //    // the "|| failure=1" at the end of this line just catches problems with the :prod
-    //    // tag not existing if we didn't uncomment the optional "re-tag as prod" stage
-    //    //
-    //  } // end steps
-    //} // end stage "clean up"
+    stage('Clean Up') {
+      // delete the images locally
+      steps {
+        sh 'docker rmi ${IMAGE} || failure=1' 
+        //
+        // the "|| failure=1" at the end of this line just catches problems with the :prod
+        // tag not existing if we didn't uncomment the optional "re-tag as prod" stage
+        //
+      } // end steps
+    } // end stage "clean up"
+
+  post {
+    always {
+      // archive the sbom
+      archiveArtifacts artifacts: 'sbom.json'
+      // and, just to be sure, let's clean up after ourselves, 
+      // remove any sboms we've created from the workspace
+      sh 'rm -f *sbom*'
+    } // end always
+  } //end post
     
   } // end stages
 } // end pipeline
