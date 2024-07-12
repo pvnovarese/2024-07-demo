@@ -82,6 +82,8 @@ pipeline {
       } // end steps
     } // end stage "clean up"
 
+  } // end stages    
+    
   post {
     always {
       // archive the sbom
@@ -92,5 +94,4 @@ pipeline {
     } // end always
   } //end post
     
-  } // end stages
 } // end pipeline
