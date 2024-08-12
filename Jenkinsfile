@@ -31,7 +31,9 @@ pipeline {
     } // end stage "checkout scm"    
     
     stage('Build Image') {
-      app = docker.build("docker.io/pvnovarese/2024-07-demo")
+      steps {/
+        app = docker.build("docker.io/pvnovarese/2024-07-demo")
+      } // end steps
     } // end stage "Build Image"
 
 //    stage('Scan Image') {
@@ -49,10 +51,12 @@ pipeline {
 //    } // end stage "Build Image"
 
     stage('Push image') {
+      steps {
         docker.withRegistry('https://docker.io', 'docker-hub') {
             app.push("${env.BUILD_NUMBER}")
             app.push("latest")
         } // end docker.withRegistry
+      } // end steps
     } // end stage "Push Image"
 
     
