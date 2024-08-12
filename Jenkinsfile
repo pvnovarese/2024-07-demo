@@ -31,67 +31,31 @@ pipeline {
     } // end stage "checkout scm"    
     
     stage('Build Image') {
-      steps {
-        script {
-          // login to docker hub (or whatever registry)
-          // build image and push it to registry
-          //
-          // alternatively, if you want to scan the image locally without pushing 
-          // it somewhere first, we can do that (see the next stage for details)
-          //
-          sh """
-            echo "${DOCKER_HUB_PSW}" | docker login ${REGISTRY} -u ${DOCKER_HUB_USR} --password-stdin
-            docker build -t ${IMAGE} --pull -f ./Dockerfile .
-            # we don't need to push since we're using anchorectl, but if you wanted to you could do this:
-            # docker push ${IMAGE}
-          """
-          // I don't like using the docker plugin but if you want to use it, here ya go
-          // DOCKER_IMAGE = docker.build REPOSITORY + ":" + TAG
-          // //docker.withRegistry( '', HUB_CREDENTIAL ) { 
-          // DOCKER_IMAGE.push() 
-          // }
-        } // end script
-      } // end steps
+      app = docker.build("docker.io/pvnovarese/2024-07-demo")
     } // end stage "Build Image"
 
-    stage('Scan Image') {
-      steps {
-        script {
-          sh """
-            curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ${HOME}/.local/bin
-            curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b ${HOME}/.local/bin
-            export PATH="${HOME}/.local/bin:${PATH}"
-            syft -o json ${IMAGE} > sbom.json
-            grype sbom:sbom.json
-          """          
-        } // end script
-      } // end steps
-    } // end stage "Build Image"
-    
-    
-    // optional stage, this just deletes the image locally so I don't end up with 300 old images
-    //
-    stage('Clean Up') {
-      // delete the images locally
-      steps {
-        sh 'docker rmi ${IMAGE} || failure=1' 
-        //
-        // the "|| failure=1" at the end of this line just catches problems with the :prod
-        // tag not existing if we didn't uncomment the optional "re-tag as prod" stage
-        //
-      } // end steps
-    } // end stage "clean up"
+//    stage('Scan Image') {
+//      steps {
+//        script {
+//          sh """
+//            curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ${HOME}/.local/bin
+//            curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b ${HOME}/.local/bin
+//            export PATH="${HOME}/.local/bin:${PATH}"
+//            syft -o json ${IMAGE} > sbom.json
+//            grype sbom:sbom.json
+//          """          
+//        } // end script
+//      } // end steps
+//    } // end stage "Build Image"
 
+    stage('Push image') {
+        docker.withRegistry('https://docker.io', 'docker-hub') {
+            app.push("${env.BUILD_NUMBER}")
+            app.push("latest")
+        } // end docker.withRegistry
+    } // end stage "Push Image"
+
+    
   } // end stages    
-    
-  post {
-    always {
-      // archive the sbom
-      archiveArtifacts artifacts: 'sbom.json'
-      // and, just to be sure, let's clean up after ourselves, 
-      // remove any sboms we've created from the workspace
-      sh 'rm -f *sbom*'
-    } // end always
-  } //end post
     
 } // end pipeline
