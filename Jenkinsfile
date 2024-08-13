@@ -35,7 +35,6 @@ pipeline {
     
     stage('Build Image') {
       steps {
-        script {
           sh """
             pwd
             ls -l
@@ -47,7 +46,6 @@ pipeline {
             cat .docker/config.json
             buildctl --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
           """
-        } // end script
       } // end steps
     } // end stage "Build Image"
 
