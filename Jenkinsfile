@@ -32,22 +32,32 @@ pipeline {
         checkout scm
       } // end steps
     } // end stage "checkout scm"    
-    
-    stage('Build Image') {
+
+    stage('Build and Push Image') {
       steps {
-          sh """
-            pwd
-            ls -l
-            env
-            ### set up docker .config
-            AUTH=$(echo ${DOCKER_HUB_USR}:${DOCKER_HUB_PSW} | tr -d \\n | base64)
-            echo ${AUTH}
-            jq --null-input --arg auth "$AUTH" --arg registry "$REGISTRY_SERVER" '{ "auths": { $registry: { "auth": $auth } } }' > .docker/config.json
-            cat .docker/config.json
-            buildctl --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
-          """
+        sh """
+          AUTH=$(echo ${DOCKER_HUB_USR}:${DOCKER_HUB_PSW} | tr -d \\n | base64)
+          jq --null-input --arg auth "$AUTH" --arg registry "$REGISTRY_SERVER" '{ "auths": { $registry: { "auth": $auth } } }' > .docker/config.json
+          buildctl --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
+        """
       } // end steps
-    } // end stage "Build Image"
+    } // end stage "build and push"
+    
+//    stage('Build Image') {
+//      steps {
+//          sh """
+//            pwd
+//            ls -l
+//            env
+//            ### set up docker .config
+//            AUTH=$(echo ${DOCKER_HUB_USR}:${DOCKER_HUB_PSW} | tr -d \\n | base64)
+//            echo ${AUTH}
+//            jq --null-input --arg auth "$AUTH" --arg registry "$REGISTRY_SERVER" '{ "auths": { $registry: { "auth": $auth } } }' > .docker/config.json
+//            cat .docker/config.json
+//            buildctl --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
+//          """
+//      } // end steps
+//    } // end stage "Build Image"
 
 //    stage('Scan Image') {
 //      steps {
