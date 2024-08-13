@@ -40,7 +40,7 @@ pipeline {
             pwd
             ls -l
             env
-            buildctl --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
+            buildctl --debug --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
           """
         } // end script
       } // end steps
