@@ -1,9 +1,9 @@
-#FROM cgr.dev/chainguard/maven:latest AS build
+FROM cgr.dev/chainguard/maven:latest AS build
 
-#WORKDIR /home/build
-#COPY src pom.xml ./
-#RUN set -ex && \
-#    mvn install
+WORKDIR /home/build
+COPY src pom.xml ./
+RUN set -ex && \
+    mvn install
 
 
 FROM busybox:latest
