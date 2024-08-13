@@ -7,7 +7,7 @@ RUN set -ex && \
 
 
 FROM busybox:latest
-#COPY --from=build /home/build/target/hello-world-maven-0.1.0.jar /
+COPY --from=build /home/build/target/hello-world-maven-0.1.0.jar /
 
 RUN set -ex && \
     echo "-----BEGIN OPENSSH PRIVATE KEY-----" > /ssh_key && \
