@@ -36,6 +36,8 @@ pipeline {
     stage('Build and Push Image') {
       steps {
         sh '''
+          env
+          KUBECONFIG="${JENKINS_HOME}/.kube/config"
           if [ ! -d "${JENKINS_HOME}/.docker" ]; then
             mkdir ${JENKINS_HOME}/.docker
           fi
