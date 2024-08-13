@@ -16,7 +16,7 @@ pipeline {
     // now we'll set up our image name/tag
     //
     REGISTRY = "docker.io"
-    REGISTRY_SERVER="https://index.docker.io/v1"    
+    REGISTRY_SERVER = "https://index.docker.io/v1/"
     REPOSITORY = "${DOCKER_HUB_USR}/${JOB_BASE_NAME}"
     BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
     TAG = "${BRANCH_NAME}"
