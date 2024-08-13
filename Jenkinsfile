@@ -36,10 +36,10 @@ pipeline {
     stage('Build and Push Image') {
       steps {
         sh '''
-          env
-          ## you'll need a kubeconfig for buildctl to reach the pod where buildkit is running
+          ## you'll need a kubeconfig for buildctl to reach the pod where buildkit is running (probably will just stash this in a credential
+          ## but right now I'm just setting this up manually when I stand up the jenkins deployment)
           KUBECONFIG="${JENKINS_HOME}/.kube/config"
-          ### going to construct a docker auth config so buildctl can push the image
+          ### going to construct a docker auth config so buildctl can push the image (this could also just be a credential I guess)
           if [ ! -d "${JENKINS_HOME}/.docker" ]; then
             mkdir ${JENKINS_HOME}/.docker
           fi
@@ -51,21 +51,7 @@ pipeline {
       } // end steps
     } // end stage "build and push"
     
-//    stage('Build Image') {
-//      steps {
-//          sh """
-//            pwd
-//            ls -l
-//            env
-//            ### set up docker .config
-//            AUTH=$(echo ${DOCKER_HUB_USR}:${DOCKER_HUB_PSW} | tr -d \\n | base64)
-//            echo ${AUTH}
-//            jq --null-input --arg auth "$AUTH" --arg registry "$REGISTRY_SERVER" '{ "auths": { $registry: { "auth": $auth } } }' > .docker/config.json
-//            cat .docker/config.json
-//            buildctl --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
-//          """
-//      } // end steps
-//    } // end stage "Build Image"
+
 
 //    stage('Scan Image') {
 //      steps {
