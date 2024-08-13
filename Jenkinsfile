@@ -36,7 +36,7 @@ pipeline {
     stage('Build and Push Image') {
       steps {
         sh '''
-          if [ ! -d "${JENKINS_HOME/.docker" ]; then
+          if [ ! -d "${JENKINS_HOME}/.docker" ]; then
             mkdir ${JENKINS_HOME}/.docker
           fi
           AUTH=$(echo ${DOCKER_HUB_USR}:${DOCKER_HUB_PSW} | tr -d \\n | base64)
