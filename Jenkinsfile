@@ -10,10 +10,13 @@ pipeline {
     // we will create DOCKER_HUB_USR and DOCKER_HUB_PSW from the docker-hub credential
     CREDENTIAL = "docker-hub"
     DOCKER_HUB = credentials("$CREDENTIAL")
+    REGISTRY_USER = "${DOCKER_HUB_USR}"
+    REGISTRY_PASSWORD = "${DOCKER_HUB_PSW}"
     //
     // now we'll set up our image name/tag
     //
     REGISTRY = "docker.io"
+    REGISTRY_SERVER="https://index.docker.io/v1"    
     REPOSITORY = "${DOCKER_HUB_USR}/${JOB_BASE_NAME}"
     BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
     TAG = "${BRANCH_NAME}"
@@ -31,8 +34,14 @@ pipeline {
     } // end stage "checkout scm"    
     
     stage('Build Image') {
-      steps {/
-        app = docker.build("docker.io/pvnovarese/2024-07-demo")
+      steps {
+        script {
+          sh """
+            pwd
+            ls -l
+            buildctl --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
+          """
+        } // end script
       } // end steps
     } // end stage "Build Image"
 
@@ -50,14 +59,14 @@ pipeline {
 //      } // end steps
 //    } // end stage "Build Image"
 
-    stage('Push image') {
-      steps {
-        docker.withRegistry('https://docker.io', 'docker-hub') {
-            app.push("${env.BUILD_NUMBER}")
-            app.push("latest")
-        } // end docker.withRegistry
-      } // end steps
-    } // end stage "Push Image"
+ //   stage('Push image') {
+ //     steps {
+ //       docker.withRegistry('https://docker.io', 'docker-hub') {
+ //           app.push("${env.BUILD_NUMBER}")
+ //           app.push("latest")
+ //       } // end docker.withRegistry
+ //     } // end steps
+ //   } // end stage "Push Image"
 
     
   } // end stages    
