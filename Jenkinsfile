@@ -40,6 +40,9 @@ pipeline {
             pwd
             ls -l
             env
+            ### set up docker .config
+            AUTH=$(echo ${DOCKER_HUB_USR}:${DOCKER_HUB_PSW}|base64)
+            jq --null-input --arg auth "$AUTH" --arg registry "$REGISTRY_SERVER" '{"auths": {$registry: {"auth": $auth} } }') > .docker/config.json
             buildctl --debug --addr kube-pod://buildkitd build --frontend dockerfile.v0 --local context=. --local dockerfile=. --output type=image,name=${IMAGE},push=true
           """
         } // end script
