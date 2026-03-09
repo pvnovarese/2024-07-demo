@@ -76,7 +76,7 @@ jobs:
     - name: Display Grype results (table format)
       if: always()
       run: |
-        grype sbom:./sbom.json
+        grype --by-cve sbom:./sbom.json
 
     - name: Upload SBOM to Dependency Graph
       uses: advanced-security/spdx-dependency-submission-action@v0.1.1
