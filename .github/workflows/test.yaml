@@ -62,17 +62,26 @@ jobs:
         
     - name: Install Latest Syft and Grype Binaries
       run: |
-        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ${HOME}/.local/bin
-        curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b ${HOME}/.local/bin
-        export PATH="${HOME}/.local/bin/:${PATH}"
-            
+        curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b ~/.local/bin
+        curl -sSfL https://get.anchore.io/grype | sudo sh -s -- -b ~/.local/bin
+        
     - name: Generate SBOM 
       run: |        
-        syft -o json ${IMAGE} > sbom.json
+        syft -o json=sbom.json -o spdx-json=spdx.json ${IMAGE}
         
     - name: Generate Vulnerability Report
       run: |
-        grype --by-cve --ignore-states wont-fix sbom:sbom.json
+        grype -o json sbom:./sbom.json > grype-vulnerability-report.json
+
+    - name: Display Grype results (table format)
+      if: always()
+      run: |
+        grype sbom:./sbom.json
+
+    - name: Upload SBOM to Dependency Graph
+      uses: advanced-security/spdx-dependency-submission-action@v0.1.1
+      with:
+        filePath: "spdx.json"
 
     ### optional
     - name: Archive SBOM
@@ -81,4 +90,12 @@ jobs:
       with:
         name: syft_sbom
         path: sbom.json
-        retention-days: 14        
+        retention-days: 90        
+
+    - name: Archive vulnerability report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: grype-vulnerability-report
+        path: grype-vulnerability-report.json
+        retention-days: 90        
